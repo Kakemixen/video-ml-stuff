@@ -31,6 +31,7 @@ class YoutubeVISDecoder:
         print("reading json file")
         with open(json_path) as f:
             data = json.load(f)
+        import pdb; pdb.set_trace()
 
         print("indexing videos")
         for video_dict in data["videos"]:
@@ -64,6 +65,15 @@ class YoutubeVISDecoder:
 
     def write_samples_df(self, dest_path):
         io_utils.make_folder_structure(dest_path)
+        indices = pd.MultiIndex.from_tuples([(v, f) for v in self.video_files.keys() for f in range(len(self.video_files[v]))])
+        df = pd.DataFrame({
+            "video_frame": [os.path.join(self.file_root_dir, f) for vid in self.video_files.values() for f in vid],
+            "annotation_frame":  [f for vid in self.segm_files.values() for f in vid]
+        }, index=indices, dtype=str)
+        io_utils.make_folder_structure(dest_path)
+        df.to_csv(dest_path)
+        
+
 
 def worker(inputs):
     annotations, size, video_paths, dest_dir = inputs
@@ -95,43 +105,11 @@ def worker(inputs):
         segm_files.append(mask_path)
     return segm_files
         
-
-
-
-
-def working_attempt():
-    json_path = "data/train/instances.json"
-    with open(json_path) as f:
-        data = json.load(f)
-            
-    segms = data["annotations"][0]["segmentations"]
-    idx = 14
-    segm = segms[idx]
-    # TODO get from annotations/0
-    h = 720
-    w = 1280
-
-
-    if type(segm) == list:
-        # polygon -- a single object might consist of multiple parts
-        # we merge all parts into one mask rle code
-        rles = maskUtils.frPyObjects(segm, h, w)
-        rle = maskUtils.merge(rles)
-    elif type(segm['counts']) == list:
-        # uncompressed RLE
-        rle = maskUtils.frPyObjects(segm, h, w)
-    else:
-        # rle
-        rle = ann['segmentation']
-
-    m = maskUtils.decode(rle)
-    print(m.shape)
-
-    import pdb; pdb.set_trace()
-
 if __name__ == "__main__":
-    #working_attempt()
-    decoder = YoutubeVISDecoder("data/train/JPEGImages", "data/train/instances.json")
-    decoder.decode_annotations("data/train/semantic_segmentations")
-    decoder.write_samples_df("data/train/samples.csv")
+    # the valid dataset doesn't have annotations
+    for dataset in ["train"]:#, "valid"]:
+        print(f"decoding dataset {dataset}")
+        decoder = YoutubeVISDecoder(f"data/{dataset}/JPEGImages", f"data/{dataset}/instances.json")
+        decoder.decode_annotations(f"data/{dataset}/semantic_segmentations")
+        decoder.write_samples_df(f"data/{dataset}/samples.csv")
 
