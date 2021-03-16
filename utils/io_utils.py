@@ -6,6 +6,9 @@ import os
 def read_img(path):
     return cv2.imread(path)
 
+def read_img_batch(paths):
+    return [read_img(p) for p in paths]
+
 def write_img(img, path):
     make_folder_structure(path)
     return cv2.imwrite(path, img)
