@@ -39,11 +39,3 @@ class VideoDataset(torch.utils.data.Dataset):
 
         return sample
 
-
-if __name__ == "__main__":
-    dataset = VideoDataset("data/train/samples.csv")
-    for i in tqdm(range(len(dataset)), total=len(dataset)):
-        sample = dataset[i]
-        print(sample["input"].shape)
-        if i >= 500: break
-
