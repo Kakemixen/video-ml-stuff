@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import cv2
 from shutil import rmtree
+import torch
 
 from utils import io_utils
 
@@ -40,3 +41,10 @@ def create_dummy_data(n_frames=8*3, vid_length=8):
 
 def remove_dummy_data():
     rmtree(TMP_BASE_DIR)
+
+def create_dummy_batch(batch_size=5, channels=3, height=4, width=6):
+    rand_pred = torch.rand((5,3,4,6))
+    target = torch.rand((5,3,4,6))
+    corr_pred = target.clone()
+    return rand_pred, corr_pred, target
+
