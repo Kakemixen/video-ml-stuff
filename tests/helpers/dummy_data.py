@@ -10,10 +10,12 @@ TMP_BASE_DIR = "/tmp/ml_project_video_dummy_data/"
 
 def create_dummy_data(n_frames=8*3, vid_length=8):
     io_utils.make_folder_structure(TMP_BASE_DIR)
-    frames = [np.random.randint(0, 255, (24,32,3)) 
+    shapes = [ (np.random.randint(16,32),np.random.randint(16,32),3) 
             for _ in range(n_frames)]
-    segmentations = [np.random.randint(0, 40, (24,32,1))
-            for _ in range(n_frames)]
+    frames = [np.random.randint(0, 255, shapes[i])
+            for i in range(n_frames)]
+    segmentations = [np.random.randint(0, 40, shapes[i])
+            for i in range(n_frames)]
     frame_paths = [ f"{TMP_BASE_DIR}dummy_frames/uuid_{i}.jpeg"
             for i in range(n_frames)]
     segmentation_paths = [ f"{TMP_BASE_DIR}dummy_segmentations/uuid_{i}.png"
