@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from utils import io_utils, img_utils
 from dataprocessing.runtime.preprocessing import normalize, batch_to_tensor
+import torch
 
 
 class VideoDataset(torch.utils.data.Dataset):
@@ -46,4 +47,3 @@ class VideoDataset(torch.utils.data.Dataset):
         sample["segmentation"] = batch_to_tensor(sample["segmentation"])
 
         return sample
-

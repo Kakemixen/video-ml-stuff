@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from dataprocessing.runtime.dataloading import VideoDataset
+from dataprocessing.runtime.datasets import VideoDataset
 
 from tests.helpers import dummy_data
 
