@@ -4,7 +4,7 @@ import torch
 from tests.helpers import dummy_data
 from unittest.mock import MagicMock
     
-from models.wrappers import TrainingWrapper
+from models.wrappers.basic_wrappers import TrainingWrapper
 
 class TestModelWrappers:
 
