@@ -11,8 +11,9 @@ class TrainingWrapper(nn.Module):
     def predict(self, x):
         return self(x)["prediction"]
 
-    def calculate_loss(self, x, target, loss):
+    def calculate_loss(self, x, target, loss_func, propagate=True):
         pred = self(x)
-        loss = loss(pred, target)
-        loss.backward()
-        return pred
+        loss = loss_func(pred, target)
+        if propagate:
+            loss.backward()
+        return loss 

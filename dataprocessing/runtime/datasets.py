@@ -9,9 +9,9 @@ import torch
 
 
 class VideoDataset(torch.utils.data.Dataset):
-    def __init__(self, df_path, img_size=(360, 640)):
+    def __init__(self, df, img_size=(360, 640)):
         super().__init__()
-        self._df = pd.read_csv(df_path, index_col=[0,1])
+        self._df = df
 
         self._sample_length = 5
         self.img_size = img_size

@@ -36,6 +36,19 @@ class TestModelWrappers:
         loss_return.backward = MagicMock()
         loss_return.backward._mock_name = "backward pass"
         loss = lambda p,t: loss_return
+
         loss_out = wrapped.calculate_loss(self.rand_pred, self.target, loss)
         loss_return.backward.assert_called()
 
+    def test_training_wrapper_loss_backward_is_suppressed(self):
+        identity = lambda x: {"prediction": x}
+        wrapped = TrainingWrapper(identity)
+
+        loss_return = torch.Tensor(0)
+        loss_return.backward = MagicMock()
+        loss_return.backward._mock_name = "backward pass"
+        loss = lambda p,t: loss_return
+
+        loss_out = wrapped.calculate_loss(self.rand_pred, self.target, 
+                loss, propagate=False)
+        loss_return.backward.not_called()
