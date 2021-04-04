@@ -42,9 +42,11 @@ def create_dummy_data(n_frames=8*3, vid_length=8):
 def remove_dummy_data():
     rmtree(TMP_BASE_DIR)
 
-def create_dummy_batch(batch_size=5, channels=3, height=4, width=6):
-    rand_pred = torch.rand((5,3,4,6))
-    target = torch.rand((5,3,4,6))
-    corr_pred = target.clone()
-    return rand_pred, corr_pred, target
+def create_dummy_batch(batch_size=5, in_channels=3, out_channels=1, 
+        height=4, width=6):
+    rand_input = torch.rand((batch_size,in_channels,height,width))
+    rand_pred  = torch.rand((batch_size,out_channels,height,width))
+    target     = torch.rand((batch_size,out_channels,height,width))
+    corr_pred  = target.clone()
+    return rand_input, rand_pred, corr_pred, target
 

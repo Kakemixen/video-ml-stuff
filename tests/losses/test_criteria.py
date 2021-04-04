@@ -9,7 +9,7 @@ class TestLosses:
 
     @classmethod
     def setup_class(cls):
-        cls.rand_pred, cls.corr_pred, cls.target = \
+        cls.rand_input, cls.rand_pred, cls.corr_pred, cls.target = \
                 dummy_data.create_dummy_batch(batch_size=5)
 
     def test_bce(self):
