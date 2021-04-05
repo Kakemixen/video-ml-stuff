@@ -11,7 +11,10 @@ import torch
 class VideoDataset(torch.utils.data.Dataset):
     def __init__(self, df, img_size=(360, 640)):
         super().__init__()
-        self._df = df
+        indices = np.unique([x[0] for x in df.index]).tolist()
+        self._df = df.set_index(pd.MultiIndex.from_tuples(
+            [(indices.index(x[0]), x[1]) for x in df.index]
+        ))
 
         self._sample_length = 5
         self.img_size = img_size
@@ -26,10 +29,12 @@ class VideoDataset(torch.utils.data.Dataset):
         return frame, segmentation
 
     def __len__(self):
-        return len(self._df.index.levels[0])
+        return len(np.unique([x[0] for x in self._df.index]))
 
     def __getitem__(self, idx):
-        video = self._df.loc[idx+1]
+        video = self._df.loc[idx]
+        assert len(video) <= self._sample_length
+
         start = np.random.randint(0, len(video) - self._sample_length)
 
         sample_range = range(start, start + self._sample_length)

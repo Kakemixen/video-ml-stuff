@@ -1,5 +1,6 @@
 import pytest
 import torch
+import pandas as pd
 
 from dataprocessing.runtime.datasets import VideoDataset
 
@@ -29,4 +30,12 @@ class TestVideoDataset:
             assert sample["input"].shape[2:] == sample["segmentation"].shape[2:]
             if i >= 5: break
 
+    def test_indexing_with_non_range_indices(self):
+        df = self.df.set_index(pd.MultiIndex.from_tuples(
+            [(x[0]*4, x[1]) for x in self.df.index]
+        ))
+        dataset = VideoDataset(df)
+        for i in range(len(dataset)):
+            sample = dataset[i]
+            if i >= 5: break
 

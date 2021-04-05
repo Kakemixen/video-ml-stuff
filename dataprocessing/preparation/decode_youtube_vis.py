@@ -31,7 +31,6 @@ class YoutubeVISDecoder:
         print("reading json file")
         with open(json_path) as f:
             data = json.load(f)
-        import pdb; pdb.set_trace()
 
         print("indexing videos")
         for video_dict in data["videos"]:
