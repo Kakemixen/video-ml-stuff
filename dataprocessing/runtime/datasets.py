@@ -33,7 +33,7 @@ class VideoDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         video = self._df.loc[idx]
-        assert len(video) <= self._sample_length
+        assert len(video) >= self._sample_length
 
         start = np.random.randint(0, len(video) - self._sample_length)
 
