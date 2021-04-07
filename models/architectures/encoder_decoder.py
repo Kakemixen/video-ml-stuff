@@ -9,4 +9,6 @@ class SimpleEncoderDecoder(nn.Module):
     def forward(self, x):
         latent = self.encoder(x)
         pred = self.decoder(latent)
+        assert pred.shape[2:] == x.shape[2:], f"shape is wrong after inference, shapes possibly not compatible with model arch\n\
+                {x.shape} -> {pred.shape}"
         return {"prediction": pred}

@@ -9,7 +9,7 @@ import torch
 
 
 class VideoDataset(torch.utils.data.Dataset):
-    def __init__(self, df, img_size=(360, 640)):
+    def __init__(self, df, img_size=(352, 640)):
         super().__init__()
         indices = np.unique([x[0] for x in df.index]).tolist()
         self._df = df.set_index(pd.MultiIndex.from_tuples(
