@@ -3,11 +3,13 @@ import numpy as np
 import json
 import os
 
-def read_img(path):
-    return cv2.imread(path)
+def read_img(path, grayscale=False):
+    if grayscale: 
+        return cv2.imread(path, cv2.IMREAD_GRAYSCALE)[:,:,np.newaxis]
+    return cv2.imread(path, cv2.IMREAD_COLOR)
 
-def read_img_batch(paths):
-    return [read_img(p) for p in paths]
+def read_img_batch(paths, grayscale=False):
+    return [read_img(p, grayscale) for p in paths]
 
 def write_img(img, path):
     make_folder_structure(path)

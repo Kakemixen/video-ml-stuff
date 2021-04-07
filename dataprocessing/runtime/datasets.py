@@ -20,9 +20,11 @@ class VideoDataset(torch.utils.data.Dataset):
         self.img_size = img_size
 
     def _prepare(self, frame, segmentation):
-        assert frame.shape[:2] == segmentation.shape[:2], f"frame of shape {frame.shape} does not match segmentation of shape {segmentation.shape}"
+        assert frame.shape[:2] == segmentation.shape[:2], \
+                f"frame of shape {frame.shape} does not match segmentation of shape {segmentation.shape}"
         frame = img_utils.resize_img(frame, self.img_size, interp=img_utils.interp_method.linear)
         segmentation = img_utils.resize_img(segmentation, self.img_size, interp=img_utils.interp_method.nearest)
+        segmentation = segmentation[:, :, np.newaxis]
         h1, h2, w1, w2 = img_utils.random_crop(frame, self.img_size)
         frame = frame[h1:h2, w1:w2, :]
         segmentation = segmentation[h1:h2, w1:w2, :]
@@ -42,7 +44,7 @@ class VideoDataset(torch.utils.data.Dataset):
         annotations = (video[f"annotation_frame"][i] for i in sample_range)
 
         sample = {"input": io_utils.read_img_batch(frames),
-                  "segmentation": io_utils.read_img_batch(annotations)}
+                  "segmentation": io_utils.read_img_batch(annotations, grayscale=True)}
 
         # do zip magic
         sample["input"], sample["segmentation"] = zip(*[self._prepare(f,s) for f,s in 

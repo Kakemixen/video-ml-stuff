@@ -23,10 +23,14 @@ class TestVideoDataset:
             assert sample is not None
             assert isinstance(sample, dict)
             assert sample["input"].dtype is torch.float32
+            assert sample["input"].dim() == 4
             assert sample["segmentation"].dtype is torch.uint8
+            assert sample["segmentation"].dim() == 4
             assert torch.max(sample["input"]) <= 1.0
             assert torch.max(sample["segmentation"]) <= 40
             assert sample["input"].shape[0] == sample["segmentation"].shape[0]
+            assert sample["input"].shape[1] == 3
+            assert sample["segmentation"].shape[1] == 1
             assert sample["input"].shape[2:] == sample["segmentation"].shape[2:]
             if i >= 5: break
 
