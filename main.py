@@ -3,10 +3,12 @@ from torch.utils.data import DataLoader
 
 from training.model_trainer import ModelTrainer
 from models.segmentors.basic_segmentors import TrivialSegmentor
-from models.wrappers.basic_wrappers import TrainingWrapper
+from models.encoders.basic_encoders import TrivialEncoder
+from models.architectures.encoder_decoder import SimpleEncoderDecoder
+from models.wrappers.basic_wrappers import VideoGeneratorWrapper
 from dataprocessing.runtime.datasets import VideoDataset
 from losses.wrappers import DictWrapper as LossWrapper
-from losses.criteria import BCELoss
+from losses.criteria import CELoss
 
 def main():
     df_path = "data/train/samples.csv"
@@ -16,9 +18,13 @@ def main():
     train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True)
     val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True)
 
-    model = TrainingWrapper(TrivialSegmentor(out_c=40, downscale_x=4))
+    model = VideoGeneratorWrapper( SimpleEncoderDecoder(
+            TrivialEncoder(in_c=3, enc_c=32, out_c=128, downscale_x=4),
+            TrivialSegmentor(in_c=128, enc_c=32, out_c=41, upscale_x=4)
+    ))
 
-    loss = LossWrapper({"prediction": BCELoss()})
+
+    loss = LossWrapper({"prediction": CELoss()})
 
     trainer = ModelTrainer(model, train_dataloader, val_dataloader, loss)
 
