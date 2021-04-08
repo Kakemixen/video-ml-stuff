@@ -15,8 +15,8 @@ def main():
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
         
-    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True)
-    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True)
+    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=10)
+    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=10)
 
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
             TrivialEncoder(in_c=3, enc_c=32, out_c=128, downscale_x=4),
