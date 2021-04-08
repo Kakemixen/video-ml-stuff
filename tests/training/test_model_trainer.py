@@ -36,7 +36,7 @@ class TestModelTrainer:
 
         model_trainer.train_epoch()
         mock_training_wrapper.calculate_loss.assert_called_with(
-                self.rand_input, self.target, mock_loss, propagate=True)
+                {"input":self.rand_input, "segmentation":self.target}, mock_loss, propagate=True)
 
 
         
@@ -49,6 +49,6 @@ class TestModelTrainer:
 
         val_loss = model_trainer.validate_epoch()
         mock_training_wrapper.calculate_loss.assert_called_with(
-                self.rand_input, self.target, mock_loss, propagate=False)
+                {"input":self.rand_input, "segmentation":self.target}, mock_loss, propagate=False)
         assert val_loss >= 0
 

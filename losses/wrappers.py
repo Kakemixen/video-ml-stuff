@@ -14,6 +14,7 @@ class DictWrapper(nn.Module):
         losses = []
         for key, pred in x.items():
             if key in self.loss_dict.keys():
+                assert pred.device == target.device
                 losses.append(self.loss_dict[key](pred, target) * self.weights_dict[key])
 
         return torch.stack(losses).mean()

@@ -3,17 +3,17 @@ import torch.nn as nn
 class TrainingWrapper(nn.Module):
     def __init__(self, model):
         super().__init__()
-        self.model = model
+        self.model = model.cuda()
 
     def forward(self, x):
-        return self.model(x)
+        return self.model(x.cuda())
 
     def predict(self, x):
-        return self(x)["prediction"]
+        return self(x.cuda())["prediction"]
 
-    def calculate_loss(self, x, target, loss_func, propagate=True):
-        pred = self(x)
-        loss = loss_func(pred, target)
+    def calculate_loss(self, batch, loss_func, propagate=True):
+        pred = self(batch["input"]) # implicit cuda()
+        loss = loss_func(pred, batch["segmentation"].cuda())
         if propagate:
             loss.backward()
         return loss.detach()
@@ -21,20 +21,20 @@ class TrainingWrapper(nn.Module):
 class VideoGeneratorWrapper(nn.Module):
     def __init__(self, model):
         super().__init__()
-        self.model = model
+        self.model = model.cuda()
 
     def forward(self, x):
-        for frame in x:
+        for frame in x.cuda():
             yield self.model(frame)
 
     def predict(self, x):
-        for frame in self(x):
+        for frame in self(x.cuda()):
             yield frame["prediction"]
 
-    def calculate_loss(self, inputs, targets, loss_func, propagate=True):
+    def calculate_loss(self, batch, loss_func, propagate=True):
         # transpose input and target
-        inputs = inputs.permute(1,0,2,3,4)
-        targets = targets.permute(1,0,2,3,4)
+        inputs = batch["input"].permute(1,0,2,3,4) # implicit cuda in foward
+        targets = batch["segmentation"].permute(1,0,2,3,4).cuda()
 
         pred_gen = self(inputs)
         loss = 0

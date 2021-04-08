@@ -19,15 +19,13 @@ class ModelTrainer:
         curr_loss = -1
         for batch in tqdm(self.dataloader_train):
             batch_loss = self.model.calculate_loss(
-                    batch["input"], batch["segmentation"], 
-                    self.criterion, propagate=True)
+                    batch, self.criterion, propagate=True)
             curr_loss = batch_loss
 
     def validate_epoch(self):
         val_loss = 0
         for batch in tqdm(self.dataloader_val):
             batch_loss = self.model.calculate_loss(
-                    batch["input"], batch["segmentation"], 
-                    self.criterion, propagate=False)
+                    batch, self.criterion, propagate=False)
             val_loss += batch_loss
         return val_loss / len(self.dataloader_val)

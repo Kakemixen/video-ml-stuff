@@ -4,7 +4,7 @@ import torch
 from collections.abc import Iterable
 
 from tests.helpers import dummy_data
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
     
 from models.wrappers.basic_wrappers import TrainingWrapper, VideoGeneratorWrapper
 
@@ -14,7 +14,8 @@ class TestTrainingWrapper:
     def setup_class(cls):
         cls.rand_input, cls.rand_pred, cls.corr_pred, cls.target = \
                 dummy_data.create_dummy_batch(batch_size=5)
-        identity = lambda x: {"prediction": x}
+        identity = lambda x: {"prediction": x.cpu()}
+        identity.cuda = Mock(return_value=identity)
         cls.wrapped = TrainingWrapper(identity)
 
     def test_training_wrapper_forward_pass_dict(self):
@@ -34,7 +35,7 @@ class TestTrainingWrapper:
         loss_return.detach = MagicMock(name="detach_call")
         loss = lambda p,t: loss_return
 
-        loss_out = self.wrapped.calculate_loss(self.rand_pred, self.target, loss)
+        loss_out = self.wrapped.calculate_loss({"input": self.rand_pred, "segmentation":self.target}, loss)
         loss_return.backward.assert_called()
         loss_return.detach.is_called()
 
@@ -44,7 +45,7 @@ class TestTrainingWrapper:
         loss_return.detach = MagicMock(name="detach_call")
         loss = lambda p,t: loss_return
 
-        loss_out = self.wrapped.calculate_loss(self.rand_pred, self.target, 
+        loss_out = self.wrapped.calculate_loss({"input": self.rand_pred, "segmentation":self.target}, 
                 loss, propagate=False)
         loss_return.backward.not_called()
         loss_return.detach.is_called()
@@ -59,7 +60,9 @@ class TestVideoGenWrapper:
         cls.rand_pred  = torch.stack([cls.rand_pred for _ in range(3)])
         cls.corr_pred  = torch.stack([cls.corr_pred for _ in range(3)])
         cls.target     = torch.stack([cls.target for _ in range(3)])
-        identity = lambda x: {"prediction": x}
+
+        identity = lambda x: {"prediction": x.cpu()}
+        identity.cuda = Mock(return_value=identity)
         cls.wrapped = VideoGeneratorWrapper(identity)
 
     def test_training_wrapper_forward_pass_dict(self):
@@ -81,7 +84,7 @@ class TestVideoGenWrapper:
         loss_return.detach = MagicMock(name="detach_call")
         loss = lambda p,t: loss_return
 
-        loss_out = self.wrapped.calculate_loss(self.rand_pred, self.target, loss)
+        loss_out = self.wrapped.calculate_loss({"input": self.rand_pred, "segmentation":self.target}, loss)
         loss_return.backward.assert_called()
         loss_return.detach.is_called()
 
@@ -91,7 +94,7 @@ class TestVideoGenWrapper:
         loss_return.detach = MagicMock(name="detach_call")
         loss = lambda p,t: loss_return
 
-        loss_out = self.wrapped.calculate_loss(self.rand_pred, self.target, 
+        loss_out = self.wrapped.calculate_loss({"input": self.rand_pred, "segmentation":self.target}, 
                 loss, propagate=False)
         loss_return.backward.not_called()
         loss_return.detach.is_called()

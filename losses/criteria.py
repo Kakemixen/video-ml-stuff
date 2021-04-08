@@ -16,5 +16,5 @@ class CELoss(nn.Module):
 
     def forward(self, pred, target):
         assert pred.dim() == 4
-        return F.cross_entropy(pred, target[:,0,:,:].type(torch.LongTensor), reduction="none").mean((1,2))
+        return F.cross_entropy(pred, target[:,0,:,:].type(torch.long), reduction="none").mean((1,2))
 
