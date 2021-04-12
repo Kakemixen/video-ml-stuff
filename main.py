@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from torch.utils.data import DataLoader
 
 from training.model_trainer import ModelTrainer
@@ -15,8 +16,8 @@ def main():
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
         
-    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=10)
-    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=10)
+    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=20)
+    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=20)
 
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
             TrivialEncoder(in_c=3, enc_c=32, out_c=128, downscale_x=4),
@@ -39,5 +40,6 @@ def split_df(df, train_frac=0.8):
 
 
 if __name__ == "__main__":
+    np.random.seed(42)
     main()
 
