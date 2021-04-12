@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -35,11 +36,17 @@ class VideoDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         video = self._df.loc[idx]
-        assert len(video) >= self._sample_length
+        if len(video) <= self._sample_length:
+            start = 0
+            end = len(video)
+            fill = self._sample_length - len(video)
+        else:
+            assert len(video) > self._sample_length
+            start = np.random.randint(0, len(video) - self._sample_length)
+            end = start + self._sample_length
+            fill = 0
 
-        start = np.random.randint(0, len(video) - self._sample_length)
-
-        sample_range = range(start, start + self._sample_length)
+        sample_range = range(start, end)
         frames = (video[f"video_frame"][i] for i in sample_range)
         annotations = (video[f"annotation_frame"][i] for i in sample_range)
 
@@ -50,7 +57,8 @@ class VideoDataset(torch.utils.data.Dataset):
         sample["input"], sample["segmentation"] = zip(*[self._prepare(f,s) for f,s in 
             zip(sample["input"], sample["segmentation"])])
 
-        sample["input"] = normalize(batch_to_tensor(sample["input"]))
-        sample["segmentation"] = batch_to_tensor(sample["segmentation"])
+        # convert np.array -> torch.Tensor, padding if necerrary
+        sample["input"] = F.pad(normalize(batch_to_tensor(sample["input"])),    pad=(0,0,0,0,0,0,0,fill))
+        sample["segmentation"] = F.pad(batch_to_tensor(sample["segmentation"]), pad=(0,0,0,0,0,0,0,fill))
 
         return sample
