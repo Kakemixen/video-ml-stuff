@@ -16,8 +16,9 @@ def main():
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
         
-    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=20)
-    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=32, shuffle=True, pin_memory=True, num_workers=20)
+    batch_size = 1
+    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
+    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
 
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
             TrivialEncoder(in_c=3, enc_c=32, out_c=128, downscale_x=4),
@@ -29,7 +30,8 @@ def main():
 
     trainer = ModelTrainer(model, train_dataloader, val_dataloader, loss)
 
-    trainer.train(epochs=5)
+    #trainer.train(epochs=2)
+    trainer.overfit_batch()
 
 
 def split_df(df, train_frac=0.8):

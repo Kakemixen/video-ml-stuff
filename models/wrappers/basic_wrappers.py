@@ -43,4 +43,4 @@ class VideoGeneratorWrapper(nn.Module):
             if propagate:
                 batch_loss.backward()
             loss += batch_loss.detach()
-        return loss 
+        return loss / len(batch["input"])
