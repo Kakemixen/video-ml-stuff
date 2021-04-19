@@ -14,6 +14,7 @@ class TrivialSegmentor(nn.Module):
             blocks.append(nn.UpsamplingBilinear2d(scale_factor=2))
         blocks.append(ConvBNReLU(enc_c, out_c, ks=1, s=1, p=0, 
             batch_norm=False, activation=False))
+        blocks.append(nn.Sigmoid())
         self.decoder = nn.Sequential(*blocks)
 
     def forward(self, x):
