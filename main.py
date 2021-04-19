@@ -16,13 +16,15 @@ def main():
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
         
-    batch_size = 1
+    batch_size = 32
     train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
     val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
 
+    downscale = 4
+    print(downscale)
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
-            TrivialEncoder(in_c=3, enc_c=32, out_c=128, downscale_x=4),
-            TrivialSegmentor(in_c=128, enc_c=32, out_c=41, upscale_x=4)
+            TrivialEncoder(in_c=3, enc_c=64, out_c=128, downscale_x=downscale),
+            TrivialSegmentor(in_c=128, enc_c=64, out_c=41, upscale_x=downscale)
     ))
 
 
@@ -30,9 +32,7 @@ def main():
 
     trainer = ModelTrainer(model, train_dataloader, val_dataloader, loss)
 
-    #trainer.train(epochs=2)
-    trainer.overfit_batch()
-
+    trainer.train(epochs=4)
 
 def split_df(df, train_frac=0.8):
     vid_indices = pd.Series(df.index.levels[0])

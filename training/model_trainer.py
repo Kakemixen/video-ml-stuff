@@ -9,11 +9,10 @@ class ModelTrainer:
         self.model = model
         self.optimizer = torch.optim.Adam(
                 self.model.parameters(), 
-                lr=0.0001)
+                lr=0.0005)
 
     def train(self, epochs=10):
         val_loss = self.validate_epoch()
-        print(f"val loss: {val_loss}")
         for e in range(epochs):
             print(f"epoch {e}/{epochs}")
             self.train_epoch()
@@ -34,7 +33,7 @@ class ModelTrainer:
             batch_loss = self.model.calculate_loss(
                     batch, self.criterion, propagate=False)
             val_loss += batch_loss
-        print(f"val loss: {val_loss}")
+        print(f"val loss: {val_loss / len(self.dataloader_val)}")
         return val_loss / len(self.dataloader_val)
     
     def overfit_batch(self):
@@ -50,4 +49,12 @@ class ModelTrainer:
                 self.optimizer.step()
                 bar.set_postfix(loss=batch_loss.item())
 
-
+    def train_empty_epoch(self):
+        with tqdm(self.dataloader_train) as epoch_iter:
+            for batch in epoch_iter:
+                self.optimizer.zero_grad()
+                batch["input"] = torch.zeros_like(batch["input"])
+                batch_loss = self.model.calculate_loss(
+                        batch, self.criterion, propagate=True)
+                self.optimizer.step()
+                epoch_iter.set_postfix(loss=batch_loss.item())
