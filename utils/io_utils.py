@@ -6,7 +6,8 @@ import os
 def read_img(path, grayscale=False):
     if grayscale: 
         return cv2.imread(path, cv2.IMREAD_GRAYSCALE)[:,:,np.newaxis]
-    return cv2.imread(path, cv2.IMREAD_COLOR)
+    bgr_img = cv2.imread(path, cv2.IMREAD_COLOR)
+    return cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
 
 def read_img_batch(paths, grayscale=False):
     return [read_img(p, grayscale) for p in paths]

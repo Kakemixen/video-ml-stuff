@@ -58,3 +58,24 @@ class ModelTrainer:
                         batch, self.criterion, propagate=True)
                 self.optimizer.step()
                 epoch_iter.set_postfix(loss=batch_loss.item())
+
+    def visualize_epoch(self):
+        from torch.utils.tensorboard import SummaryWriter
+        from torchvision.utils import make_grid
+        writer = SummaryWriter(log_dir="debug_tb")
+        for num, batch in enumerate(tqdm(self.dataloader_train)):
+            if num > 1: return
+            vids = make_overlay(batch["input"], batch["segmentation"])
+            vid_grids = [make_grid(v) for v in vids]
+            for i, vid_grid in enumerate(vid_grids):
+                writer.add_image(f"batch_{num}/sample_{i}", vid_grid)
+
+MAPPING = torch.randint(0, 255, (41, 3)).numpy() / 255
+MAPPING[0] = [0,0,0]
+def make_overlay(inp, seg):
+    seg_rgb = torch.Tensor(MAPPING[seg.squeeze(2)]).permute(0,1,4,2,3)
+    seg_a = 0.4
+    overlay = (1-seg_a)*inp + seg_a*seg_rgb
+    return overlay
+
+
