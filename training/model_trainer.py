@@ -1,5 +1,7 @@
 import torch
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import make_grid
 
 class ModelTrainer:
     def __init__(self, model, dataloader_train, dataloader_val, criterion):
@@ -60,8 +62,6 @@ class ModelTrainer:
                 epoch_iter.set_postfix(loss=batch_loss.item())
 
     def visualize_epoch(self):
-        from torch.utils.tensorboard import SummaryWriter
-        from torchvision.utils import make_grid
         writer = SummaryWriter(log_dir="debug_tb")
         for num, batch in enumerate(tqdm(self.dataloader_train)):
             if num > 1: return

@@ -10,7 +10,7 @@ import torch
 
 
 class VideoDataset(torch.utils.data.Dataset):
-    def __init__(self, df, img_size=(352, 640)):
+    def __init__(self, df, img_size=(320, 576)):
         super().__init__()
         indices = np.unique([x[0] for x in df.index]).tolist()
         self._df = df.set_index(pd.MultiIndex.from_tuples(
@@ -20,13 +20,16 @@ class VideoDataset(torch.utils.data.Dataset):
         self._sample_length = 5
         self.img_size = img_size
 
-    def _prepare(self, frame, segmentation):
+    def _resize(self, frame, segmentation):
         assert frame.shape[:2] == segmentation.shape[:2], \
                 f"frame of shape {frame.shape} does not match segmentation of shape {segmentation.shape}"
         frame = img_utils.resize_img(frame, self.img_size, interp=img_utils.interp_method.linear)
         segmentation = img_utils.resize_img(segmentation, self.img_size, interp=img_utils.interp_method.nearest)
         segmentation = segmentation[:, :, np.newaxis]
-        h1, h2, w1, w2 = img_utils.random_crop(frame, self.img_size)
+        return frame, segmentation
+    
+    def _crop(self, frame, segmentation, crop):
+        h1, h2, w1, w2 = crop
         frame = frame[h1:h2, w1:w2, :]
         segmentation = segmentation[h1:h2, w1:w2, :]
         return frame, segmentation
@@ -52,9 +55,13 @@ class VideoDataset(torch.utils.data.Dataset):
 
         sample = {"input": io_utils.read_img_batch(frames),
                   "segmentation": io_utils.read_img_batch(annotations, grayscale=True)}
+        for i in range(1, len(sample["input"])): assert sample["input"][i].shape == sample["input"][0].shape
 
         # do zip magic
-        sample["input"], sample["segmentation"] = zip(*[self._prepare(f,s) for f,s in 
+        sample["input"], sample["segmentation"] = zip(*[self._resize(f,s) for f,s in 
+            zip(sample["input"], sample["segmentation"])])
+        crop = img_utils.random_crop(sample["input"][0], self.img_size)
+        sample["input"], sample["segmentation"] = zip(*[self._crop(f,s,crop) for f,s in 
             zip(sample["input"], sample["segmentation"])])
 
         # convert np.array -> torch.Tensor, padding if necerrary
