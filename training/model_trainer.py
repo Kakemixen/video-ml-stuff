@@ -70,6 +70,8 @@ class ModelTrainer:
         torch.save(storage_dict, os.path.join(self.cpt_dir, f"checkpoint_{epoch}.pth.tar"))
 
     def visualize_data(self, dataloader):
+        # TODO make selection consistent
+        # TODO check for problems in predictions
         for num, batch in enumerate(tqdm(dataloader)):
             vids = make_overlay(batch["input"], batch["segmentation"])
             preds = make_overlay(batch["input"], self.model.predict(batch["input"]).argmax(dim=2) )
