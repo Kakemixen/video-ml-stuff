@@ -16,7 +16,7 @@ def main():
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
         
-    batch_size = 8
+    batch_size = 16
     train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
     val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
 
@@ -32,8 +32,7 @@ def main():
 
     trainer = ModelTrainer(model, train_dataloader, val_dataloader, loss)
 
-    #trainer.train(epochs=4)
-    trainer.visualize_epoch()
+    trainer.train(epochs=4)
 
 def split_df(df, train_frac=0.8):
     vid_indices = pd.Series(df.index.levels[0])

@@ -2,16 +2,22 @@ import torch
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
+from utils import io_utils
+import os
 
 class ModelTrainer:
-    def __init__(self, model, dataloader_train, dataloader_val, criterion):
+    def __init__(self, model, dataloader_train, dataloader_val, criterion,
+            cpt_dir="storage/checkpoints/"
+        ):
         self.dataloader_train = dataloader_train
         self.dataloader_val = dataloader_val
         self.criterion = criterion 
         self.model = model
         self.optimizer = torch.optim.Adam(
-                self.model.parameters(), 
+                self.model.model.parameters(), 
                 lr=0.0005)
+        self.cpt_dir = cpt_dir
+        io_utils.make_folder_structure(self.cpt_dir, clean=True)
 
     def train(self, epochs=10):
         val_loss = self.validate_epoch()
@@ -19,6 +25,7 @@ class ModelTrainer:
             print(f"epoch {e}/{epochs}")
             self.train_epoch()
             val_loss = self.validate_epoch()
+            self.store_cpt(e, val_loss)
 
     def train_epoch(self):
         with tqdm(self.dataloader_train) as epoch_iter:
@@ -37,6 +44,15 @@ class ModelTrainer:
             val_loss += batch_loss
         print(f"val loss: {val_loss / len(self.dataloader_val)}")
         return val_loss / len(self.dataloader_val)
+
+    def store_cpt(self, epoch, loss_val):
+        storage_dict = {
+                "model_state_dict": self.model.model.state_dict(),
+                "optim_state_dict": self.optimizer.state_dict(),
+                "epoch": epoch,
+                "loss": loss_val
+        }
+        torch.save(storage_dict, os.path.join(self.cpt_dir, f"checkpoint_{epoch}.pth.tar"))
     
     def overfit_batch(self):
         batch = next(iter(self.dataloader_train))
@@ -62,7 +78,7 @@ class ModelTrainer:
                 epoch_iter.set_postfix(loss=batch_loss.item())
 
     def visualize_epoch(self):
-        writer = SummaryWriter(log_dir="debug_tb")
+        writer = SummaryWriter(log_dir="storage/debug_tb")
         for num, batch in enumerate(tqdm(self.dataloader_train)):
             if num > 1: return
             vids = make_overlay(batch["input"], batch["segmentation"])

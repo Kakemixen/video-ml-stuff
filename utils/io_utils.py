@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import json
 import os
+import shutil
 
 def read_img(path, grayscale=False):
     if grayscale: 
@@ -20,10 +21,14 @@ def write_npy(arr, path):
     make_folder_structure(path)
     return np.save(path, arr)
     
-def make_folder_structure(path):
+def make_folder_structure(path, clean=False):
     dir_ = os.path.dirname(path)
+    if clean and os.path.isdir(dir_):
+        shutil.rmtree(dir_)
     if not os.path.isdir(dir_):
         os.makedirs(dir_)
+
+
 
 
 if __name__ == "__main__":
