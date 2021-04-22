@@ -15,12 +15,14 @@ def main():
     df_path = "data/train/samples.csv"
     df = pd.read_csv(df_path, index_col=[0,1])
     train_df, val_df = split_df(df)
+    _, tb_df = split_df(val_df, val_num=10)
         
     batch_size = 16
     train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
     val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
+    tb_dataloader = DataLoader(VideoDataset(tb_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=2)
 
-    downscale = 4
+    downscale = 2
     print(downscale)
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
             TrivialEncoder(in_c=3, enc_c=64, out_c=128, downscale_x=downscale),
@@ -30,13 +32,20 @@ def main():
 
     loss = LossWrapper({"prediction": CELoss()})
 
-    trainer = ModelTrainer(model, train_dataloader, val_dataloader, loss)
+    trainer = ModelTrainer(model, train_dataloader, val_dataloader, tb_dataloader, loss)
 
     trainer.train(epochs=4)
 
-def split_df(df, train_frac=0.8):
-    vid_indices = pd.Series(df.index.levels[0])
-    train = vid_indices.sample(frac=train_frac)
+def split_df(df, train_frac=0.8, val_num=None, train_num=None):
+    vid_indices = pd.Series(np.unique([x[0] for x in df.index]))
+    if train_num:
+        train = vid_indices.sample(n=train_num)
+    elif val_num:
+        train = vid_indices.sample(n=len(vid_indices) - val_num)
+    elif train_frac:
+        train = vid_indices.sample(frac=train_frac)
+    else:
+        raise ValueError("need some sample arg")
     test = vid_indices.drop(train.index)
     return df.loc[train], df.loc[test]
 

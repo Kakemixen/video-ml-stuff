@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class TrainingWrapper(nn.Module):
@@ -24,16 +25,18 @@ class VideoGeneratorWrapper(nn.Module):
         self.model = model.cuda()
 
     def forward(self, x):
-        for frame in x.cuda():
+        for frame in x:
             yield self.model(frame)
 
     def predict(self, x):
-        for frame in self(x.cuda()):
-            yield frame["prediction"]
+        inputs = x.permute(1,0,2,3,4).cuda()
+        preds = torch.stack([frame["prediction"].cpu() for frame in self(inputs)], dim=1)\
+                .argmax(dim=2).unsqueeze(2)
+        return preds
 
     def calculate_loss(self, batch, loss_func, propagate=True):
         # transpose input and target
-        inputs = batch["input"].permute(1,0,2,3,4) # implicit cuda in foward
+        inputs = batch["input"].permute(1,0,2,3,4).cuda()
         targets = batch["segmentation"].permute(1,0,2,3,4).cuda()
 
         pred_gen = self(inputs)

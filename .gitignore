@@ -133,3 +133,6 @@ data
 
 # direnv
 .direnv
+
+# storage
+storage
