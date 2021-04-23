@@ -71,10 +71,9 @@ class ModelTrainer:
 
     def visualize_data(self, dataloader):
         # TODO make selection consistent
-        # TODO check for problems in predictions
         for num, batch in enumerate(tqdm(dataloader)):
             vids = make_overlay(batch["input"], batch["segmentation"])
-            preds = make_overlay(batch["input"], self.model.predict(batch["input"]).argmax(dim=2) )
+            preds = make_overlay(batch["input"], self.model.predict(batch["input"]) )
             vid_grids = [make_grid([make_grid(v), make_grid(p)], nrow=1) for v,p in zip(vids, preds)]
             for i, vid_grid in enumerate(vid_grids):
                 self.tb.add_image(f"sample/{i*num + i}", vid_grid, self.step)
