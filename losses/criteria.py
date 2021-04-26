@@ -13,8 +13,9 @@ class BCELoss(nn.Module):
 class CELoss(nn.Module):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.weight = torch.Tensor([0.25, *[1.0]*40]).cuda()
 
     def forward(self, pred, target):
         assert pred.dim() == 4
-        return F.cross_entropy(pred, target[:,0,:,:].type(torch.long), reduction="none").mean((1,2))
+        return F.cross_entropy(pred, target[:,0,:,:].type(torch.long), weight=self.weight, reduction="none").mean((1,2))
 
