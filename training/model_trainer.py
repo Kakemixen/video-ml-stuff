@@ -7,7 +7,7 @@ import os
 
 class ModelTrainer:
     def __init__(self, model, dataloader_train, dataloader_val, dataloader_tb,
-            criterion, cpt_dir="storage/checkpoints/", tb_dir="storage/tensorboard/",
+            criterion, cpt_dir="storage/current/checkpoints/", tb_dir="storage/current/tensorboard/",
             training_logs_per_epoch = 10
         ):
         self.dataloader_train = dataloader_train

@@ -3,13 +3,16 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from training.model_trainer import ModelTrainer
+from dataprocessing.runtime.datasets import VideoDataset
+from losses.criteria import CELoss
+from losses.wrappers import DictWrapper as LossWrapper
+
 from models.segmentors.basic_segmentors import TrivialSegmentor
+from models.segmentors.deeplab import DeepLabHeadV3Plus
 from models.encoders.basic_encoders import TrivialEncoder
+from models.encoders.resnet import ResNetBackBone, Bottleneck
 from models.architectures.encoder_decoder import SimpleEncoderDecoder
 from models.wrappers.basic_wrappers import VideoGeneratorWrapper
-from dataprocessing.runtime.datasets import VideoDataset
-from losses.wrappers import DictWrapper as LossWrapper
-from losses.criteria import CELoss
 
 def main():
     df_path = "data/train/samples.csv"
@@ -18,15 +21,15 @@ def main():
     _, tb_df = split_df(val_df, val_num=10)
         
     batch_size = 16
-    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
-    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=20)
+    num_workers = 5
+    train_dataloader = DataLoader(VideoDataset(train_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=num_workers)
+    val_dataloader = DataLoader(VideoDataset(val_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=num_workers)
     tb_dataloader = DataLoader(VideoDataset(tb_df), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=2)
 
-    downscale = 2
-    print(downscale)
+    print("resnet50")
     model = VideoGeneratorWrapper( SimpleEncoderDecoder(
-            TrivialEncoder(in_c=3, enc_c=64, out_c=128, downscale_x=downscale),
-            TrivialSegmentor(in_c=128, enc_c=64, out_c=41, upscale_x=downscale)
+            ResNetBackBone(Bottleneck, [3, 4, 6, 3]),
+            DeepLabHeadV3Plus(2048, 256, 41, out_shape=[320, 576])
     ))
 
 
@@ -34,7 +37,7 @@ def main():
 
     trainer = ModelTrainer(model, train_dataloader, val_dataloader, tb_dataloader, loss)
 
-    trainer.train(epochs=4)
+    trainer.train(epochs=10)
 
 def split_df(df, train_frac=0.8, val_num=None, train_num=None):
     vid_indices = pd.Series(np.unique([x[0] for x in df.index]))
